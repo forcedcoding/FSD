@@ -1,44 +1,54 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import './view.css';
+import "./styles.css";
 
-const View = () => {
+const View = ({ refreshTrigger }) => {
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
-        viewdata();
-    }, []);
+        viewData();
+    }, [refreshTrigger]); // Re-fetch when `refreshTrigger` changes
 
-    const viewdata = async () => {
+    const viewData = async () => {
         try {
             const res = await axios.get("http://localhost:9000/users");
-            setUsers(res.data);
+            if (Array.isArray(res.data)) {
+                setUsers(res.data);
+            } else {
+                console.error("Unexpected response format:", res.data);
+                setUsers([]);
+            }
         } catch (error) {
             console.error("Error fetching data:", error);
+            setUsers([]);
         }
     };
 
     return (
-        <div>
+        <div className="viewthetable" >
             <h2>User List</h2>
-            <table border="1" cellPadding="10">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Age</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {users.map((user) => (
-                        <tr key={user.id}>
-                            <td>{user.id}</td>
-                            <td>{user.name}</td>
-                            <td>{user.age}</td>
+            {users.length > 0 ? (
+                <table border="1" cellPadding="10">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Age</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {users.map((user) => (
+                            <tr key={user.id}>
+                                <td>{user.id}</td>
+                                <td>{user.name}</td>
+                                <td>{user.age}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            ) : (
+                <p>No users available.</p>
+            )}
         </div>
     );
 };
